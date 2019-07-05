@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Seu Primeiro Jogo - HTML5</title>
+        <style type="text/css">
+            canvas {
+              border: 1px solid #000000;
+            }
+        </style>
+    </head>  
+    <body onload="inicializar()">
+        <canvas id="canvas" width="600" height="480" style="background: url('fundo1.png'); background-size: 100% 100%;">
+            Navegador não suporta HTML5
+        </canvas>
+        <script type="text/javascript">
+           var barraAltura, barraLargura, jogadorPosicaoX, velocidadeJogador, bolaDiametro, bolaPosX, bolaPosY, velocidadeBola;
+        
+        window.addEventListener('keydown', KeyDown, true);
+        document.getElementById("canvas").addEventListener('click', KeyDown, true);   
+
+        function inicializar()
+        {
+            bolaDiametro = 20;
+            bolaPosX = Math.random() * 580;
+            bolaPosY = Math.random() * 460;
+
+            canvas = document.getElementById("canvas");
+            context = canvas.getContext("2d");        
+            
+            gameLoop();
+            setInterval(gameLoop, 2000);
+        }   
+
+
+        function KeyDown(evt){
+            var canvas = document.getElementById("canvas");
+
+            // posição dos cliques descontando a distância da borda da janela
+            var posX = evt.clientX - 9;
+            var posY = evt.clientY - 10;
+            
+            var bposX = bolaPosX;
+            var bposY = bolaPosY;
+
+            context.beginPath();
+            context.arc(bposX, bposY, bolaDiametro, 0, Math.PI * 2, true);
+            context.fillStyle='#ff0000'
+            context.fill();
+
+
+            if(Math.abs(bposY-posY) <= 20 && Math.abs(bposX - posX) <= 20){
+                console.log("Acertou!", (Math.abs(bposX - posX))+","+(Math.abs(bposY-posY)));
+            }
+
+            console.log("Posição da bola: x", bposX+","+bposY);
+            console.log("Posição do clique: x", posX+","+posY);
+            console.log("Diferenca: ", (Math.abs(bposX - posX))+","+(Math.abs(bposY-posY)));
+        }
+
+
+        function gameLoop()
+        {    
+            bolaPosY = Math.random() * 460;
+            bolaPosX = Math.random() * 580;
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            context.beginPath();
+            context.arc(bolaPosX, bolaPosY, bolaDiametro, 0, Math.PI * 2, true);
+            context.fillStyle='#000000'
+            context.fill();
+        }
+        </script>
+    </body>
+</html>
