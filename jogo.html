@@ -48,12 +48,15 @@
 
         var playerName = "";
         var timer = 0;
+        var players=[""];
         
         window.addEventListener('keydown', KeyDown, true);
         document.getElementById("canvas").addEventListener('click', KeyDown, true);   
 
         function inicializar()
         {
+            var letreiro = document.getElementById("letreiro");
+
             bolaDiametro = 20;
             bolaPosX = Math.random() * 580;
             bolaPosY = Math.random() * 460;
@@ -86,6 +89,7 @@
                 context.arc(bposX, bposY, bolaDiametro, 0, Math.PI * 2, true);
                 context.fillStyle='#ff0000'
                 context.fill();
+                players.push(playerName);
                 connection.send(playerName);
             }
 
@@ -94,6 +98,25 @@
             console.log("Diferenca: ", (Math.abs(bposX - posX))+","+(Math.abs(bposY-posY)));
         }
 
+        function ocorrencia()
+        {
+            var maior = "";
+            var ocorrenciasMaior = 0;
+
+            for ( var i = 0 ; i < players.length ; i++ ) {
+                var ocorrencias = 1;
+                for ( var t = i+1 ; t < players.length ; t++ )
+                    if ( players[i] == players[t] )
+                        ocorrencias++;
+
+                if ( ocorrencias > ocorrenciasMaior ) {
+                    maior = players[i];
+                    ocorrenciasMaior = ocorrencias;
+                }
+            }
+
+            return maior;
+        }
 
         function gameLoop()
         {
@@ -106,6 +129,9 @@
 
             if (timer == 21000) {
                 clearInterval(interval);
+                console.log(ocorrencia());
+                document.getElementById('letreiro').innerHTML = ocorrencia();
+                letreiro.style.display = 'block';
                 return;
             }
 
@@ -125,7 +151,7 @@
             var $messages = $("#messages"),
                 $send = $("#send"),
                 $message = $("#message"),
-                connection = new WebSocket('ws://test:1234@localhost:8080/gameclick')
+                connection = new WebSocket('ws://test:1234@caio.gaspar.localhost.run/gameclick')
             $send.prop("disabled",true)
 
             connection.onopen = function () {
