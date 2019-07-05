@@ -89,7 +89,6 @@
                 context.arc(bposX, bposY, bolaDiametro, 0, Math.PI * 2, true);
                 context.fillStyle='#ff0000'
                 context.fill();
-                players.push(playerName);
                 connection.send(playerName);
             }
 
@@ -168,6 +167,7 @@
             connection.onerror = function (error) { console.log('WebSocket Error ', error) }
             connection.onmessage = function (event) {
                 $messages.prepend($("<li>" + event.data + "</li>"))
+                players.push(event.data)
             }
         </script>
     </body>
