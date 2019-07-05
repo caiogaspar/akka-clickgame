@@ -1,15 +1,22 @@
 package com.gameclick
 
+import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef}
+import akka.persistence.PersistentActor
 
+sealed trait Msg
 object Player {
   case class Connected(outgoing: ActorRef)
-  case class IncomingMessage(text: String)
-  case class OutgoingMessage(text: String)
+  case class DecreaseScore(value: String)
+  case class IncreaseScore(value: String)
+  case class GetScore(value: Int)
 }
 
-class Player(score: ActorRef) extends Actor {
+class Player(centralGame: ActorRef) extends Actor { //} with PersistentActor {
   import Player._
+
+  //override def persistenceId = "player-name"
+  var currentScore: Int = 0
 
   def receive = {
     case Connected(outgoing) =>
@@ -17,14 +24,21 @@ class Player(score: ActorRef) extends Actor {
   }
 
   def connected(outgoing: ActorRef): Receive = {
-    score ! Score.Join
+    centralGame ! GameClick.Join
 
     {
-      case IncomingMessage(text) =>
-        score ! Score.ChatMessage(text)
+      case DecreaseScore(value) =>
+        //currentScore -= value
+        centralGame ! GameClick.UpdateScore(value)
 
-      case Score.ChatMessage(text) =>
-        outgoing ! OutgoingMessage(text)
+      case GameClick.UpdateScore(value) =>
+        //currentScore += value
+        outgoing ! IncreaseScore(value)
+
+      case GetScore =>
+        System.out.println("First: " + currentScore)
+        System.out.println("Second: " + (sender() ! currentScore))
+        sender() ! currentScore
     }
   }
 
