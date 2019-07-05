@@ -66,10 +66,7 @@
 
             window.setTimeout(function(){
                 letreiro.style.display = 'none';
-            },10000);
-            
-            gameLoop();
-            interval = setInterval(gameLoop, 1000);
+            },2000);
         }   
 
 
@@ -162,6 +159,9 @@
                     $message.val("")
                     $send.hide()
                     $message.hide()
+
+                    gameLoop();
+                    interval = setInterval(gameLoop, 1000);
                 })
             }
             connection.onerror = function (error) { console.log('WebSocket Error ', error) }
