@@ -19,13 +19,6 @@ object Server {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
-    /*val route =
-      path("clickgame") {
-        get {
-          complete("Such HTTP response")
-        }
-      }*/
-
     val score = system.actorOf(Props(new GameClick), "score")
 
     def newPlayer(): Flow[Message, Message, NotUsed] = {
@@ -36,23 +29,29 @@ object Server {
       val incomingMessages: Sink[Message, NotUsed] =
         Flow[Message].map {
           // transform websocket message to domain message
-          case TextMessage.Strict(text) => Player.DecreaseScore(text)
-          //case TextMessage.Strict(text) => Player.DecreaseScore(r.nextInt(10))
-        }.to(Sink.actorRef[Player.DecreaseScore](playerActor, PoisonPill))
+          case TextMessage.Strict(text) => Player.IncreaseScore(text.concat(",").concat(r.nextInt(10).toString))
+        }.to(Sink.actorRef[Player.IncreaseScore](playerActor, PoisonPill))
 
       val outgoingMessages: Source[Message, NotUsed] =
-        Source.actorRef[Player.IncreaseScore](10, OverflowStrategy.fail)
+        Source.actorRef[Player.DecreaseScore](10, OverflowStrategy.fail)
           .mapMaterializedValue { outActor =>
             // give the player actor a way to send messages out
             playerActor ! Player.Connected(outActor)
             NotUsed
           }.map(
           // transform domain message to web socket message
-          (outMsg: Player.IncreaseScore) => TextMessage(outMsg.value.toString))
+          (outMsg: Player.DecreaseScore) => TextMessage(outMsg.value.toString))
 
       // then combine both to a flow
       Flow.fromSinkAndSource(incomingMessages, outgoingMessages)
     }
+
+    val routeNewPlayer =
+      path("newplayer") {
+        get {
+          complete("")
+        }
+      }
 
     val route =
       path("gameclick") {

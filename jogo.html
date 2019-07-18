@@ -86,6 +86,7 @@
                 context.arc(bposX, bposY, bolaDiametro, 0, Math.PI * 2, true);
                 context.fillStyle='#ff0000'
                 context.fill();
+
                 connection.send(playerName);
             }
 
@@ -147,7 +148,7 @@
             var $messages = $("#messages"),
                 $send = $("#send"),
                 $message = $("#message"),
-                connection = new WebSocket('ws://test:1234@caio.gaspar.localhost.run/gameclick')
+                connection = new WebSocket('ws://test:1234@localhost:8080/gameclick')
             $send.prop("disabled",true)
 
             connection.onopen = function () {

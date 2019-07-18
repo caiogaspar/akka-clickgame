@@ -1,10 +1,13 @@
 package com.gameclick
 
+import java.util.stream.Collectors
+
 import akka.actor.Actor.Receive
 import akka.actor.{Actor, ActorRef}
 import akka.persistence.PersistentActor
 
 sealed trait Msg
+
 object Player {
   case class Connected(outgoing: ActorRef)
   case class DecreaseScore(value: String)
@@ -18,6 +21,8 @@ class Player(centralGame: ActorRef) extends Actor { //} with PersistentActor {
   //override def persistenceId = "player-name"
   var currentScore: Int = 0
 
+  var name: String = ""
+
   def receive = {
     case Connected(outgoing) =>
       context.become(connected(outgoing))
@@ -27,18 +32,26 @@ class Player(centralGame: ActorRef) extends Actor { //} with PersistentActor {
     centralGame ! GameClick.Join
 
     {
-      case DecreaseScore(value) =>
-        //currentScore -= value
-        centralGame ! GameClick.UpdateScore(value)
+      case IncreaseScore(value) => {
+        name = value.split(",").head
+        currentScore += value.split(",").last.toInt
+        centralGame ! GameClick.UpdateScore(
+          name.concat(",").concat(value.split(",").last).concat(",").concat(currentScore.toString)
+        )
+      }
 
-      case GameClick.UpdateScore(value) =>
-        //currentScore += value
-        outgoing ! IncreaseScore(value)
+      case GameClick.UpdateScore(value) => {
+        currentScore = currentScore - (if (name != value.split(",").head) 1 else 0)
+        outgoing ! DecreaseScore(name.concat(",").concat(value.split(",").last).concat(",").concat(currentScore.toString))
+      }
 
-      case GetScore =>
+
+      case GetScore => {
         System.out.println("First: " + currentScore)
         System.out.println("Second: " + (sender() ! currentScore))
         sender() ! currentScore
+      }
+
     }
   }
 
