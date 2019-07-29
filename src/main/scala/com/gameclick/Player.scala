@@ -10,8 +10,8 @@ sealed trait Msg
 
 object Player {
   case class Connected(outgoing: ActorRef)
-  case class DecreaseScore(value: String)
-  case class IncreaseScore(value: String)
+  case class DecreaseScore(value: GameAction)
+  case class IncreaseScore(value: GameAction)
   case class GetScore(value: Int)
 }
 
@@ -32,17 +32,17 @@ class Player(centralGame: ActorRef) extends Actor { //} with PersistentActor {
     centralGame ! GameClick.Join
 
     {
-      case IncreaseScore(value) => {
-        name = value.split(",").head
-        currentScore += value.split(",").last.toInt
+      case IncreaseScore(gameAction) => {
+        name = gameAction.playerName
+        currentScore += gameAction.points
         centralGame ! GameClick.UpdateScore(
-          name.concat(",").concat(value.split(",").last).concat(",").concat(currentScore.toString)
+          GameAction(name, gameAction.points, currentScore)
         )
       }
 
-      case GameClick.UpdateScore(value) => {
-        currentScore = currentScore - (if (name != value.split(",").head) 1 else 0)
-        outgoing ! DecreaseScore(name.concat(",").concat(value.split(",").last).concat(",").concat(currentScore.toString))
+      case GameClick.UpdateScore(gameAction) => {
+        currentScore = currentScore - (if (name != gameAction.playerName) 1 else 0)
+        outgoing ! DecreaseScore(GameAction(name, gameAction.points, currentScore))
       }
 
 

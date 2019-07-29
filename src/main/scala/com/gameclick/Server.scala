@@ -29,7 +29,7 @@ object Server {
       val incomingMessages: Sink[Message, NotUsed] =
         Flow[Message].map {
           // transform websocket message to domain message
-          case TextMessage.Strict(text) => Player.IncreaseScore(text.concat(",").concat(r.nextInt(10).toString))
+          case TextMessage.Strict(playerName) => Player.IncreaseScore(GameAction(playerName, r.nextInt(10)))
         }.to(Sink.actorRef[Player.IncreaseScore](playerActor, PoisonPill))
 
       val outgoingMessages: Source[Message, NotUsed] =
@@ -39,8 +39,9 @@ object Server {
             playerActor ! Player.Connected(outActor)
             NotUsed
           }.map(
-          // transform domain message to web socket message
-          (outMsg: Player.DecreaseScore) => TextMessage(outMsg.value.toString))
+            // transform domain message to web socket message
+            (outMsg: Player.DecreaseScore) => TextMessage(outMsg.value.playerName + "," + outMsg.value.points + "," + outMsg.value.currentScore)
+          )
 
       // then combine both to a flow
       Flow.fromSinkAndSource(incomingMessages, outgoingMessages)

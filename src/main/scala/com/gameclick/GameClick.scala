@@ -1,11 +1,10 @@
 package com.gameclick
 
 import akka.actor.{Actor, ActorRef, Terminated}
-import akka.persistence.PersistentActor
 
 object GameClick {
   case object Join
-  case class UpdateScore(value: String)
+  case class UpdateScore(value: GameAction)
 }
 
 class GameClick extends Actor { //with PersistentActor {
